@@ -145,7 +145,7 @@ class ID3:
     
 if __name__=="__main__":
 
-    df = pd.read_csv("exams.csv")
+    df = pd.read_csv("datasets/exams.csv")
     df = df.assign(score = lambda x: sum([df["math score"], df["reading score"], df["writing score"]])/3)
 
     # bins = [0, 51, 70, 90, 100]
@@ -155,23 +155,13 @@ if __name__=="__main__":
     df['grade'] = pd.cut(df['score'], bins, labels=category)
     df.drop(columns=['math score', 'reading score','writing score', 'score'], inplace=True)
 
-
     feature_cols = ['gender', 'race/ethnicity', 'parental level of education', 'lunch','test preparation course']
     X = df[feature_cols] # Features
     y = df.grade # Target variable
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1) # 70% training and 30% test
-
 
     id3 = ID3()
     id3.fit(X_train, y_train)
 
     id3.eval(X_test, y_test)
 
-
-    feature_cols = ['gender', 'race/ethnicity', 'parental level of education', 'lunch','test preparation course']
-    X = df[feature_cols] # Features
-    y = df.grade # Target variable
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1) # 70% training and 30% test
-
-    id3.eval(X_test, y_test)
