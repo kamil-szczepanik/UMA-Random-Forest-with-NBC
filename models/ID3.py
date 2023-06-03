@@ -1,7 +1,5 @@
 import pandas as pd
 import numpy as np
-from matplotlib import pyplot as plt
-import random
 from sklearn.model_selection import train_test_split # Import train_test_split function
 from sklearn import metrics #Import scikit-learn metrics module for accuracy calculation
 
@@ -95,7 +93,8 @@ class ID3:
                 # label_names = [key for key, value in df[labels].value_counts().iteritems()] # draw most common with weights but its not deterministic
                 # weights = [value for key, value in df[labels].value_counts().iteritems()]
                 # root[prev_attribute_val] = random.choices(label_names, weights=weights, k=1)[0] 
-                root[prev_attribute_val] = next(df[labels].value_counts().iteritems())[0] #get most common
+                # root[prev_attribute_val] = list(df[labels].value_counts().iteritems())[0] #get most common
+                root[prev_attribute_val] = max(X["grade"].value_counts().to_dict(), key=X["grade"].value_counts().to_dict().get)
             else:
                 root[prev_attribute_val] = dict()
                 root[prev_attribute_val][attribute_name] = attribute_node
@@ -113,7 +112,7 @@ class ID3:
         df = X_train
         self.create_tree(df, labels, self.tree, None)
         
-    def predict_instance(self, root, instance):
+    def predict_instance(self, root, instance, default=None):
         if isinstance(root, dict):
             attribute = next(iter(root))
             attribute_value = instance[attribute]
@@ -122,27 +121,30 @@ class ID3:
             else:
                 # tree has not seen this kind of data in the training set
                 # return first attribute value - deterministic solution
-                return self.predict_instance(root[attribute][list(root[attribute].keys())[0]], instance)
+                # return self.predict_instance(root[attribute][list(root[attribute].keys())[0]], instance)
+                return default
         else:  # not dict so it's a leaf
             return root
         
     def predict(self, X_test):
-        preds = []
-        for index, x in X_test.iterrows():
-            prediction = self.predict_instance(self.tree, x)
-            preds.append(prediction)
-            
-        return np.array(preds)
-            
+        # preds = []
+        # for index, x in X_test.iterrows():
+        #     prediction = self.predict_instance(self.tree, x)
+        #     preds.append(prediction)
+        # return np.array(preds)
+        preds_df = X_test.apply(lambda x: self.predict_instance(self.tree, x), axis=1)
+        return preds_df
+
             
     def eval(self, X_test, y_test):
         y_pred = self.predict(X_test)
-        y_test = np.array(y_test)
+        y_test = np.array(y_test, dtype=str)
+        y_pred = np.array(y_pred, dtype=str)
         acc = metrics.accuracy_score(y_test, y_pred)
         print('Accuracy:', acc)
         return acc
-
     
+
 if __name__=="__main__":
 
     df = pd.read_csv("datasets/exams.csv")
@@ -158,10 +160,16 @@ if __name__=="__main__":
     feature_cols = ['gender', 'race/ethnicity', 'parental level of education', 'lunch','test preparation course']
     X = df[feature_cols] # Features
     y = df.grade # Target variable
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1) # 70% training and 30% test
 
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1) # 70% training and 30% test
     id3 = ID3()
     id3.fit(X_train, y_train)
 
     id3.eval(X_test, y_test)
+
+    # y_pred = id3.predict(X_test, '1.0')
+    
+    # print(np.count_nonzero(y_pred == '1.0'))
+    
 
