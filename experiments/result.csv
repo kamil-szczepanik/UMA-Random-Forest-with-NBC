@@ -1,0 +1,4 @@
+model,accuracy,dataset,attribute part,instances per classifier,id3 to NBC,num of classifiers
+model,0.298,exams,1,2,3,4
+model,0.6830000000000002,e-commerce,1,2,3,4
+model,0.8742685555897752,airline,1,2,3,4

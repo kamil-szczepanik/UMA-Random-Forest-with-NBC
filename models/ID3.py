@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split # Import train_test_split function
 from sklearn import metrics #Import scikit-learn metrics module for accuracy calculation
+from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
 
 
 class ID3:
@@ -94,7 +95,7 @@ class ID3:
                 # weights = [value for key, value in df[labels].value_counts().iteritems()]
                 # root[prev_attribute_val] = random.choices(label_names, weights=weights, k=1)[0] 
                 # root[prev_attribute_val] = list(df[labels].value_counts().iteritems())[0] #get most common
-                root[prev_attribute_val] = max(X["grade"].value_counts().to_dict(), key=X["grade"].value_counts().to_dict().get)
+                root[prev_attribute_val] = max(df[labels].value_counts().to_dict(), key=df[labels].value_counts().to_dict().get)
             else:
                 root[prev_attribute_val] = dict()
                 root[prev_attribute_val][attribute_name] = attribute_node
@@ -134,42 +135,17 @@ class ID3:
         # return np.array(preds)
         preds_df = X_test.apply(lambda x: self.predict_instance(self.tree, x), axis=1)
         return preds_df
-
-            
-    def eval(self, X_test, y_test):
+    
+    def score(self, X_test, y_test):
         y_pred = self.predict(X_test)
         y_test = np.array(y_test, dtype=str)
         y_pred = np.array(y_pred, dtype=str)
         acc = metrics.accuracy_score(y_test, y_pred)
-        print('Accuracy:', acc)
         return acc
     
-
-if __name__=="__main__":
-
-    df = pd.read_csv("datasets/exams.csv")
-    df = df.assign(score = lambda x: sum([df["math score"], df["reading score"], df["writing score"]])/3)
-
-    # bins = [0, 51, 70, 90, 100]
-    # category = [2, 3, 4, 5]
-    bins = [0, 51, 60, 70, 80, 90, 100]
-    category = ['2', '3', '3.5', '4', '4.5', '5']
-    df['grade'] = pd.cut(df['score'], bins, labels=category)
-    df.drop(columns=['math score', 'reading score','writing score', 'score'], inplace=True)
-
-    feature_cols = ['gender', 'race/ethnicity', 'parental level of education', 'lunch','test preparation course']
-    X = df[feature_cols] # Features
-    y = df.grade # Target variable
-
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1) # 70% training and 30% test
-    id3 = ID3()
-    id3.fit(X_train, y_train)
-
-    id3.eval(X_test, y_test)
-
-    # y_pred = id3.predict(X_test, '1.0')
-    
-    # print(np.count_nonzero(y_pred == '1.0'))
+    def eval(self, X_test, y_test):
+        acc = self.score(X_test, y_test)
+        print('Accuracy:', acc)
+        return acc
     
 
