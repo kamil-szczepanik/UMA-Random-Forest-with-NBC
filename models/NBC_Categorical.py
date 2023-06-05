@@ -76,8 +76,12 @@ class NBC_Categorical:
     
     def score(self, X_test, y_test):
         y_pred = self.predict(X_test)
-        y_test = np.array(y_test, dtype=str)
-        y_pred = np.array(y_pred, dtype=str)
+        y_dtype = y_test.dtype.name
+        if y_dtype == 'category':
+            y_dtype = y_test.cat.categories.dtype.name
+        if y_dtype == 'object':
+            y_dtype = 'str'
+        y_pred = np.array(y_pred, dtype=y_dtype)
         acc = metrics.accuracy_score(y_test, y_pred)
         return acc
     
