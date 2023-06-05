@@ -108,12 +108,13 @@ class ID3:
                     self.create_tree(attribute_val_df, labels, next_root, node)
     
     def fit(self, X_train, y_train):
+        df = X_train.copy()
         labels = y_train.name
-        X_train[labels] = y_train
-        df = X_train
+        df[labels] = y_train.copy()
+        
         self.create_tree(df, labels, self.tree, None)
         
-    def predict_instance(self, root, instance, default=None):
+    def predict_instance(self, root, instance, default=np.nan):
         if isinstance(root, dict):
             attribute = next(iter(root))
             attribute_value = instance[attribute]
