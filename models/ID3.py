@@ -106,18 +106,20 @@ class ID3:
         y_pred = [self._walk_down(self.root, sample) for sample in X_test]
         return pd.Series(np.array(y_pred))
 
-    def score(self, X_test, y_test):
+    def scores(self, X_test, y_test):
         X_test = np.array(X_test)
         y_pred = self.predict(X_test)
         y_pred = np.array(y_pred, dtype=str)
         y_test = np.array(y_test, dtype=str)
         acc = metrics.accuracy_score(y_test, y_pred)
-        return acc
+        f1 = metrics.f1_score(y_test, y_pred, average='macro')
+        return acc, f1
     
     def eval(self, X_test, y_test):
-        acc = self.score(X_test, y_test)
+        acc, f1 = self.scores(X_test, y_test)
         print('Accuracy:', acc)
-        return acc
+        print("F1 score: ", f1)
+        return acc, f1
 
     def _walk_down(self, node, sample):
         if node.is_leaf:
@@ -130,5 +132,5 @@ class ID3:
                 if b[0] == sample[feature_id]:
                     return self._walk_down(b[1], sample)
 
-        return node.label
+        return "?"
 

@@ -56,7 +56,7 @@ class RandomForestClf:
         return acc, f1
     
     def eval(self, X_test, y_test):
-        acc, f1 = self.score(X_test, y_test)
+        acc, f1 = self.scores(X_test, y_test)
         print('Accuracy:', acc)
         print("F1 score: ", f1)
         return acc, f1
