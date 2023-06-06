@@ -110,7 +110,7 @@ class ID3:
     def fit(self, X_train, y_train):
         df = X_train.copy()
         labels = y_train.name
-        df[labels] = y_train.copy()
+        df[labels] = y_train.copy().astype(str)
         
         self.create_tree(df, labels, self.tree, None)
         
@@ -139,13 +139,8 @@ class ID3:
     
     def score(self, X_test, y_test):
         y_pred = self.predict(X_test)
-        y_test = np.array(y_test)
-        y_dtype = y_test.dtype.name
-        if y_dtype == 'category':
-            y_dtype = y_test.cat.categories.dtype.name
-        if y_dtype == 'object':
-            y_dtype = 'str'
-        y_pred = np.array(y_pred, dtype=y_dtype)
+        y_pred = np.array(y_pred, dtype=str)
+        y_test = np.array(y_test, dtype=str)
         acc = metrics.accuracy_score(y_test, y_pred)
         return acc
     

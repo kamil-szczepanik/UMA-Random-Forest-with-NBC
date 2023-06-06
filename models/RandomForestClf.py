@@ -37,7 +37,7 @@ class RandomForestClf:
         return train_df.drop(columns=['label']), train_df['label']
 
     def predict(self, X_test):
-        predictions = np.empty([len(self.forest), len(X_test)])
+        predictions = np.empty([len(self.forest), len(X_test)], dtype='<U32')
         for i in range (len(self.forest)):
             X_test_i = X_test[self.attributes_for_clf[i]]
             y_pred = self.forest[i].predict(X_test_i)
@@ -46,12 +46,7 @@ class RandomForestClf:
     
     def score(self, X_test, y_test):
         y_pred = self.predict(X_test)
-        y_dtype = y_test.dtype.name
-        if y_dtype == 'category':
-            y_dtype = y_test.cat.categories.dtype.name
-        if y_dtype == 'object':
-            y_dtype = 'str'
-        y_pred = np.array(y_pred, dtype=y_dtype)
+        y_test = np.array(y_test, dtype='<U32')
         acc = metrics.accuracy_score(y_test, y_pred)
         return acc
     
