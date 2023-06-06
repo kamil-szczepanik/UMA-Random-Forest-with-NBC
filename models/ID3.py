@@ -1,143 +1,113 @@
 import pandas as pd
 import numpy as np
+from matplotlib import pyplot as plt
+import random
 from sklearn.model_selection import train_test_split # Import train_test_split function
 from sklearn import metrics #Import scikit-learn metrics module for accuracy calculation
-from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import classification_report
+
+class Node:
+    """Contains the information of the node and another nodes of the Decision Tree."""
+
+    def __init__(self):
+        self.label = None
+        self.branches = []
+        self.is_leaf = False
 
 
 class ID3:
+    """Decision Tree Classifier using ID3 algorithm."""
+
     def __init__(self):
-        self.tree = {}
+        self.features = None
+        self.root = None
 
-    def total_entropy(df, labels):
-        
-        entropy = 0
-        total_rows = df.shape[0]
-        for label in df[labels].unique():
-            label_count = df[df[labels] == label].shape[0]
-            class_entropy = - (label_count/total_rows)*np.log2(label_count/total_rows)
-            entropy += class_entropy
-            
+    def _get_entropy(self, y):
+        samples_count = len(y)
+        classes, counts = np.unique(y, return_counts=True)
+        probabilities = counts / samples_count
+        entropy = -np.sum(np.log2(probabilities) * probabilities)
         return entropy
-        
-    def attribute_entropy(attribute_data, labels):
-        attribute_entropy = 0
-        attribute_rows = attribute_data.shape[0]
-        
-        for label in attribute_data[labels].unique():
-            class_entropy = 0
-            label_count = attribute_data[attribute_data[labels] == label].shape[0]
-            if label_count != 0:
-                class_entropy = - (label_count/attribute_rows)*np.log2(label_count/attribute_rows)            
-                attribute_entropy += class_entropy
-        
-        return attribute_entropy
 
-    def information_gain(df, attribute, labels):
-        info_gain = 0
-        total_rows = df.shape[0]
-        for attr_val in df[attribute].unique():
-            attr_val_count = df[df[attribute] == attr_val].shape[0]
-            prop_attr_val = attr_val_count/total_rows
-            info_gain += prop_attr_val * ID3.attribute_entropy(df.loc[df[attribute] == attr_val], labels)
-        return ID3.total_entropy(df, labels) - info_gain
-        
+    def _get_information_gain(self, X, y, feature_name):
+        feature_id = self.features.tolist().index(feature_name)
+        feature_vals = X[:, feature_id]
+        unique_feature_vals, counts = np.unique(
+            feature_vals, return_counts=True)
+        y_subsets = [
+            [y[i]
+             for i, v in enumerate(feature_vals)
+             if v == uv]
+            for uv in unique_feature_vals
+        ]
 
-    def find_most_informative_attribute(df, labels):
-        best_attr = None
-        best_info_gain = 0
-        for attribute in df.columns.drop([labels]):
-            info_gain = ID3.information_gain(df, attribute, labels)
-            if best_info_gain < info_gain:
-                best_info_gain = info_gain
-                best_attr = attribute
-            
-        return best_attr, best_info_gain
+        info_gain_feature = sum([count / len(X) * self._get_entropy(y_subset)
+                                 for count, y_subset in zip(counts, y_subsets)])
+        info_gain = self._get_entropy(y) - info_gain_feature
+        return info_gain
 
-    
-    def create_node(self, df, attribute_name, labels):
-        attribute_node = {}
+    def _get_most_informative_feature(self, X, y, feature_names):
+        info_gains = [self._get_information_gain(X, y, feature_name)
+                      for feature_name in feature_names]
+        best_feature_name = feature_names[info_gains.index(max(info_gains))]
+        return best_feature_name
 
-        labels_list = df[labels].unique()
-        attribute_values = df[attribute_name].unique()
-        
-        for attribute_value in attribute_values:
-            attribute_val_df = df.loc[df[attribute_name] == attribute_value]
-            for label in labels_list:
-                label_count = attribute_val_df[attribute_val_df[labels] == label].shape[0]
-                if label_count == attribute_val_df.shape[0]: # pure class
-                    attribute_node[attribute_value] = label
-                    df = df[df[attribute_name] != attribute_value]
-                    break
-            else: # impure class
-                attribute_node[attribute_value] = None
-                
-        return attribute_node, df
-    
-    
-    def create_tree(self, df, labels, root, prev_attribute_val):
+    def _id3(self, X, y, feature_names):
+        node = Node()
 
-        if df.shape[0] == 0:
-            return
-        
-        attribute_name, _ = ID3.find_most_informative_attribute(df, labels)
-    
-        if attribute_name != None: # is not a non-devisable examples
-            attribute_node, df = self.create_node(df, attribute_name, labels)
-        
-        if prev_attribute_val == None:
-            root[attribute_name] = attribute_node
-            next_root = root[attribute_name]
-    
-        else:
-            if attribute_name == None:
-                # label_names = [key for key, value in df[labels].value_counts().iteritems()] # draw most common with weights but its not deterministic
-                # weights = [value for key, value in df[labels].value_counts().iteritems()]
-                # root[prev_attribute_val] = random.choices(label_names, weights=weights, k=1)[0] 
-                # root[prev_attribute_val] = list(df[labels].value_counts().iteritems())[0] #get most common
-                root[prev_attribute_val] = max(df[labels].value_counts().to_dict(), key=df[labels].value_counts().to_dict().get)
+        # if all the example have the same class (pure node), return node
+        if len(set(y)) == 1:
+            node.is_leaf = True
+            node.label = y[0]
+            return node
+
+        # if there are not more feature to compute, return node with the most probable class
+        if len(feature_names) == 0:
+            node.is_leaf = True
+            unique_vals, counts = np.unique(y, return_counts=True)
+            node.label = unique_vals[np.argmax(counts)]
+            return node
+
+        # else choose the feature that maximizes the information gain
+        best_feature_name = self._get_most_informative_feature(
+            X, y, feature_names)
+        node.label = best_feature_name
+
+        # value of the chosen feature for each instance
+        best_feature_id = self.features.tolist().index(best_feature_name)
+        feature_values = list(set(X[:, best_feature_id]))
+
+        for feature_value in feature_values:
+            branch = [feature_value, Node()]
+            node.branches.append(branch)
+
+            X_subset = X[X[:, best_feature_id] == feature_value]
+            y_subset = y[X[:, best_feature_id] == feature_value]
+
+            if len(X_subset) == 0:
+                unique_vals, counts = np.unique(y, return_counts=True)
+                branch[1].label = unique_vals[np.argmax(counts)]
             else:
-                root[prev_attribute_val] = dict()
-                root[prev_attribute_val][attribute_name] = attribute_node
-                next_root = root[prev_attribute_val][attribute_name]
+                feature_names = [
+                    a for a in feature_names if a != best_feature_name]
+                branch[1] = self._id3(X_subset, y_subset, feature_names)
+        return node
 
-        if attribute_name != None:
-            for node, branch in next_root.items():
-                if branch == None:
-                    attribute_val_df = df[df[attribute_name] == node]
-                    self.create_tree(attribute_val_df, labels, next_root, node)
-    
     def fit(self, X_train, y_train):
-        df = X_train.copy()
-        labels = y_train.name
-        df[labels] = y_train.copy().astype(str)
+        feature_names = X_train.columns
+        X_train = np.array(X_train)
+        y_train = np.array(y_train)
         
-        self.create_tree(df, labels, self.tree, None)
-        
-    def predict_instance(self, root, instance, default=np.nan):
-        if isinstance(root, dict):
-            attribute = next(iter(root))
-            attribute_value = instance[attribute]
-            if attribute_value in root[attribute]:
-                return self.predict_instance(root[attribute][attribute_value], instance)
-            else:
-                # tree has not seen this kind of data in the training set
-                # return first attribute value - deterministic solution
-                # return self.predict_instance(root[attribute][list(root[attribute].keys())[0]], instance)
-                return default
-        else:  # not dict so it's a leaf
-            return root
-        
+        self.features = np.array(feature_names)
+        self.root = self._id3(np.array(X_train), np.array(y_train), feature_names)
+
     def predict(self, X_test):
-        # preds = []
-        # for index, x in X_test.iterrows():
-        #     prediction = self.predict_instance(self.tree, x)
-        #     preds.append(prediction)
-        # return np.array(preds)
-        preds_df = X_test.apply(lambda x: self.predict_instance(self.tree, x), axis=1)
-        return preds_df
-    
+        X_test = np.array(X_test)
+        y_pred = [self._walk_down(self.root, sample) for sample in X_test]
+        return pd.Series(np.array(y_pred))
+
     def score(self, X_test, y_test):
+        X_test = np.array(X_test)
         y_pred = self.predict(X_test)
         y_pred = np.array(y_pred, dtype=str)
         y_test = np.array(y_test, dtype=str)
@@ -148,5 +118,17 @@ class ID3:
         acc = self.score(X_test, y_test)
         print('Accuracy:', acc)
         return acc
-    
+
+    def _walk_down(self, node, sample):
+        if node.is_leaf:
+            return node.label
+
+        feature_name = node.label
+        feature_id = self.features.tolist().index(feature_name)
+        if node.branches:
+            for b in node.branches:
+                if b[0] == sample[feature_id]:
+                    return self._walk_down(b[1], sample)
+
+        return node.label
 

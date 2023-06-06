@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
 from sklearn import metrics #Import scikit-learn metrics module for accuracy calculation
-from scipy.stats import mode
+# from scipy.stats import mode
+
 
 import sys
 sys.path.append('..\\models')
@@ -24,17 +25,18 @@ class RandomForestClf:
         for clf_class, clf_ratio in zip(self.clf_list, self.clf_ratio):
             for i in range(round(self.n_clf*clf_ratio)):
                 clf = clf_class()
-                X_train_bagging, y_train_bagging = self.bagging_data(X_train, y_train)
-                clf.fit(X_train_bagging, y_train_bagging)
+                X_train_bagging, y_train_bagging = self.bagging_data(X_train.copy(), y_train.copy())
+                clf.fit(X_train_bagging.copy(), y_train_bagging.copy())
                 self.forest.append(clf)
 
     def bagging_data(self, X_train, y_train):
-        train_df = X_train.sample(frac=self.percent_attributes, axis=1) # attributes randomization
+        train_df = X_train.copy()
+        # train_df = X_train.sample(frac=self.percent_attributes, axis=1, random_state=1) # attributes randomization
         self.attributes_for_clf.append(train_df.columns)
         # print(self.attributes_for_clf[-1])
-        train_df['label'] = y_train
-        train_df = train_df.sample(frac=self.percent_samples)
-        return train_df.drop(columns=['label']), train_df['label']
+        train_df['label'] = y_train.copy()
+        train_df = train_df.sample(frac=self.percent_samples, random_state=1)
+        return train_df.drop(columns=['label']).copy(), train_df['label'].copy()
 
     def predict(self, X_test):
         predictions = np.empty([len(self.forest), len(X_test)], dtype='<U32')
@@ -42,10 +44,13 @@ class RandomForestClf:
             X_test_i = X_test[self.attributes_for_clf[i]]
             y_pred = self.forest[i].predict(X_test_i)
             predictions[i] = np.array(y_pred, dtype=str)
-        return mode(predictions, keepdims=False)[0]
+        pred_df = pd.DataFrame(predictions)
+        pred_df = pd.DataFrame.mode(pred_df, axis=0).T
+        return pd.Series(pred_df[0])
     
     def score(self, X_test, y_test):
         y_pred = self.predict(X_test)
+        y_pred = np.array(y_pred, dtype='<U32')
         y_test = np.array(y_test, dtype='<U32')
         acc = metrics.accuracy_score(y_test, y_pred)
         return acc
