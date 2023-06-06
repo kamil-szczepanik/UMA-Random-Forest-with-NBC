@@ -47,7 +47,7 @@ class RandomForestClf:
         y_pred = self.predict(X_test)
         y_test = np.array(y_test, dtype='<U32')
         acc = metrics.accuracy_score(y_test, y_pred)
-        f1 = metrics.f1_score(y_test, y_pred)
+        f1 = metrics.f1_score(y_test, y_pred, average='macro')
         return acc, f1
     
     def eval(self, X_test, y_test):

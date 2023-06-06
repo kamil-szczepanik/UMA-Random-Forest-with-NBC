@@ -79,7 +79,7 @@ class NBC_Categorical:
         y_pred = np.array(y_pred, dtype=str)
         y_test = np.array(y_test, dtype=str)
         acc = metrics.accuracy_score(y_test, y_pred)
-        f1 = metrics.f1_score(y_test, y_pred)
+        f1 = metrics.f1_score(y_test, y_pred, average='macro')
         return acc, f1
     
     def eval(self, X_test, y_test):
