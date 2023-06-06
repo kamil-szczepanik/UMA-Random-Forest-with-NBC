@@ -74,14 +74,16 @@ class NBC_Categorical:
         preds_df = X_test.apply(lambda x: self.predict_instance(x), axis=1)
         return preds_df
     
-    def score(self, X_test, y_test):
+    def scores(self, X_test, y_test):
         y_pred = self.predict(X_test)
         y_pred = np.array(y_pred, dtype=str)
         y_test = np.array(y_test, dtype=str)
         acc = metrics.accuracy_score(y_test, y_pred)
-        return acc
+        f1 = metrics.f1_score(y_test, y_pred)
+        return acc, f1
     
     def eval(self, X_test, y_test):
-        acc = self.score( X_test, y_test)
+        acc, f1 = self.scores( X_test, y_test)
         print('Accuracy:', acc)
-        return acc
+        print("F1 score: ", f1)
+        return acc, f1

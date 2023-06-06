@@ -31,7 +31,6 @@ class RandomForestClf:
     def bagging_data(self, X_train, y_train):
         train_df = X_train.sample(frac=self.percent_attributes, axis=1) # attributes randomization
         self.attributes_for_clf.append(train_df.columns)
-        # print(self.attributes_for_clf[-1])
         train_df['label'] = y_train
         train_df = train_df.sample(frac=self.percent_samples)
         return train_df.drop(columns=['label']), train_df['label']
@@ -44,13 +43,15 @@ class RandomForestClf:
             predictions[i] = np.array(y_pred, dtype=str)
         return mode(predictions, keepdims=False)[0]
     
-    def score(self, X_test, y_test):
+    def scores(self, X_test, y_test):
         y_pred = self.predict(X_test)
         y_test = np.array(y_test, dtype='<U32')
         acc = metrics.accuracy_score(y_test, y_pred)
-        return acc
+        f1 = metrics.f1_score(y_test, y_pred)
+        return acc, f1
     
     def eval(self, X_test, y_test):
-        acc = self.score(X_test, y_test)
+        acc, f1 = self.score(X_test, y_test)
         print('Accuracy:', acc)
-        return acc
+        print("F1 score: ", f1)
+        return acc, f1
