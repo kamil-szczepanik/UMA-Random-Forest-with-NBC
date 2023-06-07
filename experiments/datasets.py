@@ -9,7 +9,7 @@ def get_exams_dataset():
     df.drop(columns=['math score', 'reading score','writing score', 'score'], inplace=True)
 
     for col in df:
-        df[col] = df[col].astype('category')
+        df[col] = df[col].astype(str)
         # df[col] = df[col].cat.codes # kodowanie atrubutów na inty
     feature_cols = ['gender', 'race/ethnicity', 'parental level of education', 'lunch','test preparation course']
 
@@ -39,7 +39,7 @@ def get_airline_dataset(set_type="train"):
         df[delay] = pd.cut(df[delay], delay_bins, labels=delay_category)
 
     for col in df:
-        df[col] = df[col].astype('category')
+        df[col] = df[col].astype(str)
         # df[col] = df[col].cat.codes # kodowanie atrubutów na inty
     feature_cols = ['Class', 'race/ethnicity', 'parental level of education', 'lunch','test preparation course']
 
@@ -65,7 +65,7 @@ def get_ecommerce_dataset():
     df["Weight_in_gms"] = pd.cut(df["Weight_in_gms"], weight_bins, labels=weight_category)
 
     for col in df:
-        df[col] = df[col].astype('category')
+        df[col] = df[col].astype(str)
         # df[col] = df[col].cat.codes # kodowanie atrubutów na inty
 
     X = df.drop(columns=["Reached.on.Time_Y.N"]) # Features
