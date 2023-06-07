@@ -31,7 +31,7 @@ class RandomForestClf:
 
     def bagging_data(self, X_train, y_train):
         train_df = X_train.copy()
-        train_df = X_train.sample(frac=self.percent_attributes, axis=1, random_state=1) # attributes randomization
+        train_df = X_train.sample(frac=self.percent_attributes, axis=1) # attributes randomization
         self.attributes_for_clf.append(train_df.columns)
         train_df['label'] = y_train
         train_df = train_df.sample(frac=self.percent_samples)

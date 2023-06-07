@@ -1,4 +1,5 @@
 import pandas as pd
+from matplotlib import pyplot as plt
 
 def get_exams_dataset():
     df = pd.read_csv("../datasets/exams.csv")
@@ -72,3 +73,36 @@ def get_ecommerce_dataset():
     y = df["Reached.on.Time_Y.N"] # Target variable
 
     return X, y
+
+
+if __name__=="__main__":
+    ## Exam dataset analisys
+    X, y = get_exams_dataset()
+    X["grade"] = y
+    X['grade'].value_counts().loc[['2', '3', '3.5', '4', '4.5', '5']].plot.bar()
+    plt.title("Rozkład klas w zbiorze Exams")
+    plt.xticks(rotation='horizontal')
+    plt.show()
+
+    X, y = get_ecommerce_dataset()
+    X["label"] = y
+    X['label'].value_counts().loc[['1', '0']].plot.bar()
+    plt.title("Rozkład klas w zbiorze E-commerce")
+    plt.xticks(rotation='horizontal')
+    plt.show()
+    
+
+    X, y = get_airline_dataset("train")
+    X["label"] = y
+    X['label'].value_counts().loc[['satisfied', 'neutral or dissatisfied']].plot.bar()
+    plt.title("Rozkład klas w zbiorze treningowym Airline")
+    plt.xticks(rotation='horizontal')
+    plt.show()
+
+    X, y = get_airline_dataset("test")
+    X["label"] = y
+    X['label'].value_counts().loc[['satisfied', 'neutral or dissatisfied']].plot.bar()
+    plt.title("Rozkład klas w zbiorze testowym Airline")
+    plt.xticks(rotation='horizontal')
+    plt.show()
+
