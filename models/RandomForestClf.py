@@ -1,11 +1,8 @@
+# Author: Zuzanna Górecka
 import pandas as pd
 import numpy as np
 from sklearn import metrics #Import scikit-learn metrics module for accuracy calculation
-# from scipy.stats import mode
-
-
 import sys
-sys.path.append('..\\models')
 from ID3 import ID3
 from NBC_Categorical import NBC_Categorical
 

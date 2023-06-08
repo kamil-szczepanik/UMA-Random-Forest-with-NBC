@@ -1,3 +1,5 @@
+# Implementacja wzięta z repozytorium https://github.com/aayush301/Machine-learning-lab/blob/main/Exp3-decision-tree-id3/id3.py
+# Modified a little for consistency of usage with other algorithms
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt

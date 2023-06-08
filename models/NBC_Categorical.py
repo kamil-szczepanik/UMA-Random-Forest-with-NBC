@@ -1,3 +1,4 @@
+# Author: Kamil Szczepanik
 import pandas as pd
 import numpy as np
 from sklearn import metrics #Import scikit-learn metrics module for accuracy calculation
@@ -65,6 +66,8 @@ class NBC_Categorical:
         labels_probabilites = {}
         for label, probab in probabilities.items():
             # labels_probabilites[label] = probab/np.sum(list(probabilities.values()))
+            # simple sum gave warning about dividing by very small number (close to zero)
+            # logsum solves this problem
             labels_probabilites[label] = np.exp(logsumexp(probab) -  logsumexp(list(probabilities.values()) ))
 
         
