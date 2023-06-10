@@ -18,6 +18,8 @@ from models.RandomForestClf import RandomForestClf
 from experiments.datasets import get_airline_dataset, get_exams_dataset, get_ecommerce_dataset
 from experiments.scripts import cross_validation_score, test_accuracy, get_conf_matrix, run_experiment
 
+import time
+
 def experiment1():
     # Eksperyment 1
     # Porównanie własnej implementacji NBC z implementacją z biblioteki scikit-learn
@@ -33,13 +35,17 @@ def experiment1():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1) 
 
     nbc_classifier = NBC_Categorical()
+    start = time.time()
     nbc_classifier.fit(X_train, y_train)
+    print('Czas fit() impl. wł. :', time.time()- start)
     y_pred =nbc_classifier.predict(X_test)
     our_preds = np.array(y_pred, dtype=int)
     our_nbc_acc = metrics.accuracy_score(y_test, our_preds)
 
     clf = CategoricalNB()
+    start = time.time()
     clf.fit(X_train, y_train)
+    print('Czas fit() sklearn:', time.time()- start)
     y_pred = clf.predict(X_test)
     sklearn_nbc_acc = metrics.accuracy_score(y_test, y_pred)
 
@@ -107,8 +113,33 @@ def experiment4():
                 model_param_id3_to_NBC,
                 model_param_num_of_classifiers)
     
+def experiment_eval_ID3_NBC(dataset="exams"):
+    print('\n=====================')
+    print(f"Only ID3 and only NBC evaluation on dataset {dataset}")
+    if dataset=="exams":
+        X, y = get_exams_dataset()
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1) 
+    elif dataset=="e-commerce":
+        X, y = get_exams_dataset()
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1) 
+    elif dataset=="airline":
+        (X_train, y_train), (X_test, y_test) = get_airline_dataset("train"), get_airline_dataset("test")
+
+    print("\nNaive Bayes Classifier:")
+    nbc_classifier = NBC_Categorical()
+    nbc_classifier.fit(X_train, y_train)
+    nbc_classifier.eval(X_test, y_test)
+
+    print("\nID3:")
+    id3_tree = ID3()
+    id3_tree.fit(X_train, y_train)
+    id3_tree.eval(X_test, y_test)
+
 if __name__=="__main__":
     experiment1()
     experiment2()
     experiment3()
     experiment4()
+    experiment_eval_ID3_NBC("exams")
+    experiment_eval_ID3_NBC("e-commerce")
+    experiment_eval_ID3_NBC("airline")
