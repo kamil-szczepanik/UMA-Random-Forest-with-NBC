@@ -5,7 +5,7 @@ from sklearn import metrics #Import scikit-learn metrics module for accuracy cal
 from scipy.special import logsumexp
 
 class NBC_Categorical:
-    def __init__(self, alpha=1.0e-10) -> None:
+    def __init__(self, alpha=1) -> None:
         self.alpha = alpha
         self.prior_probabilities = None
         self.conditional_probabilities = None
@@ -62,16 +62,8 @@ class NBC_Categorical:
                     label_probability *= 0
 
             probabilities[label] = label_probability
-
-        labels_probabilites = {}
-        for label, probab in probabilities.items():
-            # labels_probabilites[label] = probab/np.sum(list(probabilities.values()))
-            # simple sum gave warning about dividing by very small number (close to zero)
-            # logsum solves this problem
-            labels_probabilites[label] = np.exp(logsumexp(probab) -  logsumexp(list(probabilities.values()) ))
-
         
-        return max(labels_probabilites, key=labels_probabilites.get)
+        return max(probabilities, key=probabilities.get)
     
     def predict(self, X_test):
         preds_df = X_test.apply(lambda x: self.predict_instance(x), axis=1)

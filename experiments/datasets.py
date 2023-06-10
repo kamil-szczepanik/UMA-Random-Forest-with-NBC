@@ -2,7 +2,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 def get_exams_dataset():
-    df = pd.read_csv("../datasets/exams.csv")
+    df = pd.read_csv("datasets/exams.csv")
     df = df.assign(score = lambda x: sum([df["math score"], df["reading score"], df["writing score"]])/3)
     bins = [0, 50, 60, 70, 80, 90, 100]
     category = ['2', '3', '3.5', '4', '4.5', '5']
@@ -20,7 +20,7 @@ def get_exams_dataset():
     return X, y
 
 def get_airline_dataset(set_type="train"):
-    df = pd.read_csv(f"../datasets/airline_passenger_satisfaction_{set_type}.csv", index_col=0)
+    df = pd.read_csv(f"datasets/airline_passenger_satisfaction_{set_type}.csv", index_col=0)
 
     df.drop(columns=['id'], inplace=True)
 
@@ -50,7 +50,7 @@ def get_airline_dataset(set_type="train"):
     return X, y
 
 def get_ecommerce_dataset():
-    df = pd.read_csv(f"../datasets/e-commerce_shipping_data.csv") #, index_col=0
+    df = pd.read_csv(f"datasets/e-commerce_shipping_data.csv") #, index_col=0
     df.drop(columns=['ID'], inplace=True)
     
     cost_of_product_bins = [*range(0,int(max(df["Cost_of_the_Product"])+30), 20)]

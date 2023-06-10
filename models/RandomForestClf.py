@@ -2,9 +2,8 @@
 import pandas as pd
 import numpy as np
 from sklearn import metrics #Import scikit-learn metrics module for accuracy calculation
-import sys
-from ID3 import ID3
-from NBC_Categorical import NBC_Categorical
+from models.ID3 import ID3
+from models.NBC_Categorical import NBC_Categorical
 
 class RandomForestClf:
 
