@@ -1,4 +1,4 @@
-
+# Autorzy: Kamil Szczepanik, Zuzanna Górecka
 
 import pandas as pd
 from sklearn.model_selection import train_test_split # Import train_test_split function
