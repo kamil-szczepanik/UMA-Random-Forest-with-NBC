@@ -1,7 +1,7 @@
 # Author: Zuzanna Górecka
 import pandas as pd
 import numpy as np
-from sklearn import metrics #Import scikit-learn metrics module for accuracy calculation
+from sklearn import metrics
 from models.ID3 import ID3
 from models.NBC_Categorical import NBC_Categorical
 
@@ -27,7 +27,7 @@ class RandomForestClf:
 
     def bagging_data(self, X_train, y_train):
         train_df = X_train.copy()
-        train_df = X_train.sample(frac=self.percent_attributes, axis=1) # attributes randomization
+        train_df = X_train.sample(frac=self.percent_attributes, axis=1)
         self.attributes_for_clf.append(train_df.columns)
         train_df['label'] = y_train
         train_df = train_df.sample(frac=self.percent_samples)
